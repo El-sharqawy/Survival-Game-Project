@@ -1,0 +1,25 @@
+LOG: 0614 16:02 :: skyboxes/ruins_west.png
+LOG: 0614 16:02 :: skyboxes/ruins_south.png
+LOG: 0614 16:02 :: skyboxes/ruins_east.png
+LOG: 0614 16:02 :: skyboxes/ruins_north.png
+LOG: 0614 16:02 :: skyboxes/ruins_up.png
+LOG: 0614 16:02 :: skyboxes/ruins_down.png
+LOG: 0614 16:02 :: CObjectLoader::LoadTexture Loading Texture : share/brickwall.bmp
+LoadBMPTexture Loaded Texture share/brickwall.bmp, Id : 1
+LOG: 0614 16:02 :: CObjectLoader::LoadTexture Loading Texture : share/grass2.bmp
+LoadBMPTexture Loaded Texture share/grass2.bmp, Id : 2
+LOG: 0614 16:02 :: CObjectLoader::LoadTexture Loading Texture : share/830.bmp
+LoadBMPTexture Loaded Texture share/830.bmp, Id : 3
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_up.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_up.png, Id : 4
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_down.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_down.png, Id : 5
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_west.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_west.png, Id : 6
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_east.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_east.png, Id : 7
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_north.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_north.png, Id : 8
+LOG: 0614 16:02 :: CSkyBox::LoadTexture Loading Texture : skyboxes/ruins_south.png
+LoadPNGTexture Loaded Texture skyboxes/ruins_south.png, Id : 9
+LOG: 0614 16:03 :: Destroying Engine..
