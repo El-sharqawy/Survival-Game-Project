@@ -4,6 +4,7 @@
 
 #ifndef UTILS_H
 #define UTILS_H
+#include "../Debug/Log.h"
 #include <cstdint>
 #include "upng.h"
 #include <GL/gl.h>

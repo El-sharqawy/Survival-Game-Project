@@ -15,7 +15,7 @@ public:
     ~CCollisionSphere() = default;
 
     [[nodiscard]]float GetRadius() const;
-    [[nodiscard]]CVector3D GetCenter() const;
+    [[nodiscard]]CVector3D &GetCenter();
 
     void SetRadius(float fAmount);
     void SetCenter(CVector3D vPos);

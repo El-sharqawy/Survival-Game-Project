@@ -5,12 +5,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <SDL_events.h>
 #include <vector>
 #include <string>
 #include "../BaseLib/CollisionSphere.h"
 #include "../BaseLib/CollisionPlane.h"
 #include "../BaseLib/Camera.h"
+#include "Weapon.h"
 
 #define JUMP_VELOCITY 5.0f
 
@@ -18,7 +18,7 @@ class CPlayer
 {
 public:
     CPlayer(const std::string &sName, CCollisionSphere playerSphere, float fSpeed, float fSprintSpd,
-        float fMouseSpd);
+        float fMouseSpd, CWeapon* weapon);
     ~CPlayer();
 
     void UpdatePlayer(const std::vector<CCollisionPlane> &playerColPlane);
@@ -34,6 +34,7 @@ public:
     [[nodiscard]]CCollisionSphere GetCollisionSphere() const;
     [[nodiscard]]int32_t GetPoints() const;
     void SetPoints(int32_t iAmount);
+    void AddPoints(int32_t iAmount);
 
     [[nodiscard]]CCamera *GetPlayerCamera() const { return playerCamera; }
 
@@ -48,6 +49,14 @@ public:
     void Jump() const;
 
     void UpdatePlayerPosition();
+
+    void AddWeapon(CWeapon *newWeapon);
+    void ChangeWeapon(int32_t iWeaponNum);
+    void ChangeWeaponUp();
+    void ChangeWeaponDown();
+
+    CWeapon *GetCurrentWeapon();
+    void IsHavingWeapon(bool bIsHavingWeapon);
 
 private:
     CCollisionSphere playerColSphere;
@@ -68,6 +77,9 @@ private:
     int32_t iPoints; /* Player Points */
     CVector3D vGroundPosition;
     SDL_Window *playerWnd;
+    std::vector<CWeapon*> m_vWeapons;
+    int32_t m_iCurWeapon;
+    bool m_bIsWeapon;
 };
 
 

@@ -7,9 +7,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # Find SDL2 && OpenGL
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 find_package(OpenGL REQUIRED)
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-fpermissive")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-fpermissive -O3")
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 # Include SDL2 & OpenGL headers
@@ -57,7 +58,20 @@ add_executable(MyGame main.cpp
         Utils/stb_image_write.h
         Utils/glad.h
         Utils/glad.c
+        UserLib/Weapon.cpp
+        UserLib/Weapon.h
+        UserLib/Zombie.cpp
+        UserLib/Zombie.h
+        BaseLib/Object.cpp
+        BaseLib/Object.h
+        BaseLib/SnowParticle.cpp
+        BaseLib/SnowParticle.h
+        BaseLib/Text.cpp
+        BaseLib/Text.h
+        Debug/Utils.h
+        BaseLib/Random.cpp
+        BaseLib/Random.h
 )
 
 # Link SDL2 libraries
-target_link_libraries(MyGame ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} OpenGL::GL OpenGL::GLU)
+target_link_libraries(MyGame ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_MIXER_LIBRARIES} OpenGL::GL OpenGL::GLU)

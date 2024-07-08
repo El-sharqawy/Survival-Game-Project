@@ -1,11 +1,9 @@
 #include "Player.h"
 
-#include <SDL2/SDL.h>
 #include "../BaseLib/Collision.h"
-#include "../Debug/Log.h"
 
-CPlayer::CPlayer(const std::string &sName, const CCollisionSphere playerSphere, const float fSpeed, const float fSprintSpd,
-    const float fMouseSpd)
+CPlayer::CPlayer(const std::string &sName, CCollisionSphere playerSphere, const float fSpeed, const float fSprintSpd,
+    const float fMouseSpd, CWeapon* weapon)
 {
     sPlayerName = sName;
     playerColSphere = playerSphere;
@@ -27,6 +25,9 @@ CPlayer::CPlayer(const std::string &sName, const CCollisionSphere playerSphere, 
     vGroundPosition.Change(0, 0, 0);
     SetPlayerPosition(CVector3D(0.0,10,0));
     playerWnd = nullptr;
+    m_vWeapons.emplace_back(weapon);
+    m_iCurWeapon = 0;
+    m_bIsWeapon = true;
 }
 
 CPlayer::~CPlayer()
@@ -42,21 +43,13 @@ void CPlayer::SetPlayerPosition(const CVector3D &pos)
     playerCamera->SetCameraLocation(pos);
 }
 
-void CPlayer::UpdatePlayer(const std::vector<CCollisionPlane> &playerColPlane)
-{
-    for (const auto & playerCP : playerColPlane)
-    {
-        CCollision::SpherePlane(vPosition, playerCP.GetVectorNormal(), playerCP.GetFirstVectorPlane(),
-                                playerCP.GetSecondVectorPlane(), playerCP.GetThirdVectorPlane(),
-                                playerCP.GetFourthVectorPlane(), playerColSphere.GetRadius());
-    }
-
-    UpdatePlayerPosition();
-}
-
 void CPlayer::ShowPlayer()
 {
     SetPlayerPosition(playerCamera->GetCameraLocation());
+    if (m_bIsWeapon)
+    {
+        m_vWeapons[m_iCurWeapon]->Show();
+    }
 }
 
 std::string CPlayer::GetName() const
@@ -91,6 +84,11 @@ int32_t CPlayer::GetPoints() const
 void CPlayer::SetPoints(const int32_t iAmount)
 {
     iPoints = iAmount;
+}
+
+void CPlayer::AddPoints(const int32_t iAmount)
+{
+    iPoints += iAmount;
 }
 
 void CPlayer::SetWindow(SDL_Window *hWnd)
@@ -148,6 +146,18 @@ void CPlayer::Jump() const
     GetPlayerCamera()->SetIsJumping(true);
 }
 
+void CPlayer::UpdatePlayer(const std::vector<CCollisionPlane> &playerColPlane)
+{
+    for (const auto & playerCP : playerColPlane)
+    {
+        CCollision::SpherePlane(vPosition, playerCP.GetVectorNormal(), playerCP.GetFirstVectorPlane(),
+                                playerCP.GetSecondVectorPlane(), playerCP.GetThirdVectorPlane(),
+                                playerCP.GetFourthVectorPlane(), playerColSphere.GetRadius());
+    }
+
+    UpdatePlayerPosition();
+}
+
 void CPlayer::UpdatePlayerPosition()
 {
     bIsJumping = playerCamera->IsJumping();
@@ -167,8 +177,6 @@ void CPlayer::UpdatePlayerPosition()
         vPosition -= vDirection;
     }
 
-    SetPlayerPosition(vPosition);
-
     if (bIsSprinting)
     {
         playerCamera->SetCameraSpeed(fSprintSpeed, fMouseSpeed);
@@ -185,7 +193,7 @@ void CPlayer::UpdatePlayerPosition()
         playerCamera->SetIsJumping(false);
     }
 
-    if (vPosition.GetY() < vGroundPosition.GetY())
+    if (vPosition.GetY() <= vGroundPosition.GetY())
     {
         bIsOnTheGround = true;
     }
@@ -193,4 +201,49 @@ void CPlayer::UpdatePlayerPosition()
     {
         bIsOnTheGround = false;
     }
+
+    if (m_bIsWeapon)
+    {
+        m_vWeapons[m_iCurWeapon]->Update();
+    }
+}
+
+void CPlayer::AddWeapon(CWeapon *newWeapon)
+{
+    m_vWeapons.emplace_back(newWeapon);
+}
+
+void CPlayer::ChangeWeapon(const int32_t iWeaponNum)
+{
+    if (m_vWeapons.size() > iWeaponNum)
+    {
+        m_iCurWeapon = iWeaponNum;
+    }
+}
+
+void CPlayer::ChangeWeaponUp()
+{
+    m_iCurWeapon++;
+    if (m_iCurWeapon >= m_vWeapons.size())
+    {
+        m_iCurWeapon = 0;
+    }
+}
+void CPlayer::ChangeWeaponDown()
+{
+    m_iCurWeapon--;
+    if (m_iCurWeapon < 0)
+    {
+        m_iCurWeapon = static_cast<int32_t>(m_vWeapons.size()) - 1;
+    }
+}
+
+CWeapon *CPlayer::GetCurrentWeapon()
+{
+    return (m_vWeapons[m_iCurWeapon]);
+}
+
+void CPlayer::IsHavingWeapon(const bool bIsHavingWeapon)
+{
+        m_bIsWeapon = bIsHavingWeapon;
 }

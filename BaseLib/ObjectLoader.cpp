@@ -334,7 +334,7 @@ int32_t CObjectLoader::Load(const std::string& fileName, std::vector<CCollisionP
 		else
 			bIsTexture=true;
 
-		bIsNormals=true;
+		bIsNormals=false;
 		if(facesVec[i]->bFour)
 		{
 			glBegin(GL_QUADS);

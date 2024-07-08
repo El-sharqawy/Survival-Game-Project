@@ -5,10 +5,10 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <string>
+#define DEBUG_STRING_MAX_LEN 1024
 
-extern void TraceLog(const std::string& szStr, ...);
-extern void TraceError(const std::string& szStr, ...);
+extern void TraceError(const char * c_szFormat, ...);
+extern void TraceLog(const char * c_szFormat, ...);
+extern void OpenLogFile(bool bUseLogFile);
 
-extern void InitializeLog();
 #endif //LOG_H

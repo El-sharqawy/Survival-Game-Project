@@ -20,7 +20,7 @@ public:
                          float xDirection, float yDirection, float zDirection, CVector3D p1, CVector3D p2, CVector3D p3,
                          CVector3D p4, float *distance, CVector3D *point = nullptr);
     static float TriangleArea(CVector3D p1, CVector3D p2, CVector3D p3);
-    static bool SphereSphere(CVector3D& p1, float fRadius1, const CVector3D& p2, float fRadius2);
+    static bool SphereSphere(CVector3D& p1, float fRadius1, CVector3D& p2, float fRadius2);
     static float PointDistance(CVector3D p1, CVector3D p2);
     static float PointDistanceSquare(CVector3D p1, CVector3D p2);
     static bool SpherePlane(CVector3D &vSpherePos, CVector3D vNormalPlane, CVector3D p1, CVector3D p2, CVector3D p3,

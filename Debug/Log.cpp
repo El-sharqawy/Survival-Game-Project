@@ -1,55 +1,72 @@
 #include "Log.h"
 
+#include <string>
+#include <cstring>
 #include <cstdarg>
-#include <ctime>
-#include "../game.h"
 
-void TraceLog(const std::string& szStr, ...)
+void TraceError(const char * c_szFormat, ...)
 {
-    std::string sTempBuf;
+    char szBuf[DEBUG_STRING_MAX_LEN + 2];
+
+    strncpy(szBuf, "SYSERR: ", DEBUG_STRING_MAX_LEN);
+    size_t len = strlen(szBuf);
 
     va_list args;
-    va_start(args, szStr);
-    const size_t len = vsnprintf(nullptr, 0, szStr.c_str(), args);
-    sTempBuf.resize(len + 1);
-    vsnprintf(&sTempBuf[0], len + 1, szStr.c_str(), args);
+    va_start(args, c_szFormat);
+    len = vsnprintf(szBuf + len, sizeof(szBuf) - (len + 1), c_szFormat, args) + len;
     va_end(args);
-    sTempBuf.resize(len);
-    sTempBuf.append("\n");
 
-    time_t curTime = time(nullptr);
-    struct tm curTimeLocal = *localtime(&curTime);
-    fprintf(stdout, "LOG: %02d%02d %02d:%02d :: %s",
-        curTimeLocal.tm_mon + 1,
-        curTimeLocal.tm_mday,
-        curTimeLocal.tm_hour,
-        curTimeLocal.tm_min,
-        sTempBuf.c_str());
+    szBuf[len] = '\n';
+    szBuf[len + 1] = '\0';
+
+    const time_t ct = time(nullptr);
+    auto [tm_sec, tm_min, tm_hour, tm_mday, tm_mon, tm_year, tm_wday, tm_yday, tm_isdst, tm_gmtoff, tm_zone] = *localtime(&ct);
+
+    fprintf(stderr, "%02d%02d %02d:%02d:%02d :: %s",
+                    tm_mon + 1,
+                    tm_mday,
+                    tm_hour,
+                    tm_min,
+                    tm_sec,
+                    szBuf + 8);
+    fflush(stderr);
+}
+
+void TraceLog(const char * c_szFormat, ...)
+{
+    char szBuf[DEBUG_STRING_MAX_LEN + 2];
+
+    strncpy(szBuf, "SYSERR: ", DEBUG_STRING_MAX_LEN);
+    size_t len = strlen(szBuf);
+
+    va_list args;
+    va_start(args, c_szFormat);
+    len = vsnprintf(szBuf + len, sizeof(szBuf) - (len + 1), c_szFormat, args) + len;
+    va_end(args);
+
+    szBuf[len] = '\n';
+    szBuf[len + 1] = '\0';
+
+    const time_t ct = time(nullptr);
+    auto [tm_sec, tm_min, tm_hour, tm_mday, tm_mon, tm_year, tm_wday, tm_yday, tm_isdst, tm_gmtoff, tm_zone] = *localtime(&ct);
+
+    fprintf(stdout, "%02d%02d %02d:%02d:%02d :: %s",
+                    tm_mon + 1,
+                    tm_mday,
+                    tm_hour,
+                    tm_min,
+                    tm_sec,
+                    szBuf + 8);
     fflush(stdout);
 }
 
-void TraceError(const std::string& szStr, ...)
+void OpenLogFile(const bool bUseLogFile)
 {
-    std::string sTempBuf;
-
-    va_list args;
-    va_start(args, szStr);
-    const size_t len = vsnprintf(nullptr, 0, szStr.c_str(), args);
-    sTempBuf.resize(len + 1);
-    vsnprintf(&sTempBuf[0], len + 1, szStr.c_str(), args);
-    va_end(args);
-    sTempBuf.resize(len);
-    sTempBuf.append("\n");
-
-    time_t curTime = time(nullptr);
-    struct tm curTimeLocal = *localtime(&curTime);
-    fprintf(stderr, "SYSERR: %02d%02d %02d:%02d :: %s",
-        curTimeLocal.tm_mon + 1,
-        curTimeLocal.tm_mday,
-        curTimeLocal.tm_hour,
-        curTimeLocal.tm_min,
-        sTempBuf.c_str());
-    fflush(stderr);
+    freopen("syserr.txt", "w", stderr);
+    if (bUseLogFile)
+    {
+        freopen("log.txt", "w", stdout);
+    }
 }
 
 void InitializeLog()

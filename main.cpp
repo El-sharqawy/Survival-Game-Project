@@ -7,7 +7,7 @@
 
 int main()
 {
-    InitializeLog();
+    OpenLogFile(true);
     const std::string cfgFile("game.cfg");
     const std::map<std::string, int32_t> GameDimensionPair = LoadConfigFile(cfgFile);
 
@@ -22,11 +22,13 @@ int main()
         return (EXIT_FAILURE);
     }
 
-    if (engine->InitializeOpenGL() == false)
+   if (engine->InitializeOpenGL() == false)
     {
         TraceError("Failed To Initialize Engine OpenGL!");
         return (EXIT_FAILURE);
     }
+
+    engine->InitializeWorld();
 
     while(engine->Start())
     return (EXIT_SUCCESS);

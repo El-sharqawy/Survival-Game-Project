@@ -20,7 +20,7 @@ float CCollisionSphere::GetRadius() const
     return (fRadius);
 }
 
-CVector3D CCollisionSphere::GetCenter() const
+CVector3D &CCollisionSphere::GetCenter()
 {
     return (vCenter);
 }

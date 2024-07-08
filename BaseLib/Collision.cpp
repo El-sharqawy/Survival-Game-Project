@@ -1,15 +1,46 @@
 #include "Collision.h"
 #include "Vector3D.h"
-#include "../game.h"
+#include "../Debug/Log.h"
 #include <cmath>
 
-bool CCollision::RaySphere(const float xc, const float yc, const float zc, const float xd, const float yd, const float zd,
+/*bool CCollision::RaySphere(float xc,float yc,float zc,float xd,float yd,float zd,float xs,float ys,float zs,float r,float* dist,CVector3D* collpoint)
+{
+    float b=2*(xd*(xs-xc)+yd*(ys-yc)+zd*(zs-zc));
+    float c=xs*xs-2*xs*xc+xc*xc+ys*ys-2*ys*yc+yc*yc+zs*zs-2*zs*zc+zc*zc-r*r;
+    float disc=(b*b-4*c);
+    if(disc<0)	//if the discriminant is less then 0, there is no intersection
+    {
+        return false;
+    }
+    else
+    {
+        if(dist != nullptr)
+        {
+            (*dist)=(-b+sqrt(disc))/2;
+            if(collpoint!= nullptr)
+            {
+                float x=xs+(*dist)*xd;
+                float y=ys+(*dist)*yd;
+                float z=zs+(*dist)*zd;
+                collpoint->Change(x,y,z);;
+            }
+        }
+        return true;
+    }
+}*/
+
+/*bool CCollision::RaySphere(const float xc, const float yc, const float zc, const float xd, const float yd, const float zd,
     const float xs, const float ys, const float zs, const float rad, float *distance, CVector3D *collPoint)
 {
+    if (!distance || !collPoint)
+    {
+        return (false);
+    }
+
     const float b = 2 * (xd * (xs-xc) + yd * (ys-yc) + zd * (zs - zc));
     const float c = xs * xs - 2 * xc + xc * xc + ys * ys - 2 * ys * yc + yc * yc + zs * zs - 2 * zs * zc + zc * zc - rad * rad;
     const float disc = (b * b - 4 * c);
-    /* if the discriminant is less than 0, there is no intersection */
+    // if the discriminant is less than 0, there is no intersection
     if (disc < 0)
     {
         return false;
@@ -29,6 +60,22 @@ bool CCollision::RaySphere(const float xc, const float yc, const float zc, const
         }
     }
     return (true);
+}*/
+
+bool CCollision::RaySphere(const float xc, const float yc, const float zc,
+                           const float xd, const float yd, const float zd,
+                           const float xs, const float ys, const float zs,
+                           const float rad, float *distance, CVector3D *collPoint) {
+    const float b = 2 * (xd * (xs - xc) + yd * (ys - yc) + zd * (zs - zc));
+    const float c = (xs - xc) * (xs - xc) + (ys - yc) * (ys - yc) + (zs - zc) * (zs - zc) - rad * rad;
+    const float disc = b * b - 4 * c;
+
+    // if the discriminant is less than 0, there is no intersection
+    if (disc < 0)
+    {
+        return false;
+    }
+    return true;
 }
 
 /** TriangleArea - Function to calculate Triangle Data
@@ -249,10 +296,9 @@ float CCollision::PointDistanceSquare(const CVector3D p1, const CVector3D p2)
  * Return: True if collision has occured,
  * and been resolved by Adjusting Position of first sphere, otherwise False.
 */
-bool CCollision::SphereSphere(CVector3D& p1, const float fRadius1, const CVector3D& p2, const float fRadius2)
+bool CCollision::SphereSphere(CVector3D& p1, const float fRadius1, CVector3D& p2, const float fRadius2)
 {
     const float fDist = PointDistanceSquare(p1, p2);
-
     if (fDist < ((fRadius1 + fRadius2) * (fRadius1 + fRadius2)))
     {
         const float a = std::sqrt(fDist) - (fRadius1 + fRadius2);
