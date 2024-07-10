@@ -26,7 +26,6 @@ This project is created/tested on Ubuntu 20.04 LTS using C++ (Version 20) and CM
 
 ![Demonstrative image](/Images/First.png)
 ![Demonstrative image2](/Images/Second.png)
-![Demonstrative image3](/Images/Third.png)
 
 ## Authors
 
@@ -34,4 +33,6 @@ Osama El-sharqawy - [Github](https://github.com/El-sharqawy) / [LinkedIn](https:
 
 ## License
 
-Copyright (c) 2024 Osama El-sharqawy
+MIT License
+
+Copyright (c) 2024 Osama Elsharqawy
