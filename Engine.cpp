@@ -54,8 +54,9 @@ typedef struct {
 particles par_sys[MAX_PARTICLES];
 
 // Initialize/Reset Particles - give them their attributes
-void CEngine::initParticles(int i) {
-	CVector3D pos = GetPlayer()->GetPlayerCamera()->GetCameraLocation();
+void CEngine::initParticles(const int i)
+{
+	const CVector3D pos = GetPlayer()->GetPlayerCamera()->GetCameraLocation();
 
 	par_sys[i].alive = true;
 	par_sys[i].life = 1.0;
@@ -74,9 +75,8 @@ void CEngine::initParticles(int i) {
 
 }
 
-void CEngine::initPartSystem() {
-	int x, z;
-
+void CEngine::initPartSystem()
+{
 	glShadeModel(GL_SMOOTH);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
@@ -90,12 +90,12 @@ void CEngine::initPartSystem() {
 // For Rain
 void CEngine::drawRain()
 {
-	float x, y, z;
-	for (loop = 0; loop < MAX_PARTICLES; loop=loop+2) {
+	for (loop = 0; loop < MAX_PARTICLES; loop=loop+2)
+	{
 		if (par_sys[loop].alive == true) {
-			x = par_sys[loop].xpos;
-			y = par_sys[loop].ypos;
-			z = par_sys[loop].zpos + zoom;
+			const float x = par_sys[loop].xpos;
+			const float y = par_sys[loop].ypos;
+			const float z = par_sys[loop].zpos + zoom;
 
 			// Draw particles
 			glColor3f(0.5, 0.5, 1.0);
@@ -170,6 +170,11 @@ bool CEngine::InitializeOpenGL() const
     glViewport(0, 0, GetWidth(), GetHeight());
     glEnable(GL_TEXTURE_2D);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glShadeModel(GL_SMOOTH);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearDepth(1.0);
+	glEnable(GL_DEPTH_TEST);
 
     //Check for error
     error = glGetError();
@@ -326,7 +331,7 @@ void CEngine::InitializeWorld()
 
 	m_Music = Mix_LoadMUS("data/hive.wav");
 	Mix_PlayMusic(m_Music,-1);
-	initPartSystem();
+	//initPartSystem();
 }
 
 void CEngine::UpdateEngine()
@@ -522,24 +527,14 @@ bool CEngine::Start()
 							ChangeSkyBox(1);
 						}
 						break;
-						case SDLK_0:
+						case SDLK_1:
 						{
 							m_pPlayer->ChangeWeapon(0);
 						}
 						break;
-						case SDLK_1:
-						{
-							m_pPlayer->ChangeWeapon(1);
-						}
-						break;
 						case SDLK_2:
 						{
-							m_pPlayer->ChangeWeapon(2);
-						}
-						break;
-						case SDLK_3:
-						{
-							m_pPlayer->ChangeWeapon(3);
+							m_pPlayer->ChangeWeapon(1);
 						}
 						break;
 						case SDLK_r:
