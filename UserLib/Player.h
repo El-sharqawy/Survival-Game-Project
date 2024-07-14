@@ -56,7 +56,8 @@ public:
     void ChangeWeaponDown();
 
     CWeapon *GetCurrentWeapon();
-    void IsHavingWeapon(bool bIsHavingWeapon);
+    void SetHavingWeapon(bool bIsHavingWeapon);
+    [[nodiscard]]uint32_t GetWeaponsNumber() const;
 
 private:
     CCollisionSphere playerColSphere;

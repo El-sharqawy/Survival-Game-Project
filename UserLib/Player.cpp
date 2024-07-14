@@ -243,7 +243,12 @@ CWeapon *CPlayer::GetCurrentWeapon()
     return (m_vWeapons[m_iCurWeapon]);
 }
 
-void CPlayer::IsHavingWeapon(const bool bIsHavingWeapon)
+void CPlayer::SetHavingWeapon(const bool bIsHavingWeapon)
 {
         m_bIsWeapon = bIsHavingWeapon;
+}
+
+uint32_t CPlayer::GetWeaponsNumber() const
+{
+    return (m_vWeapons.size());
 }

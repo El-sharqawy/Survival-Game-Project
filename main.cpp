@@ -30,6 +30,7 @@ int main()
 
     engine->InitializeWorld();
 
+    engine->ShowMenu();
     while(engine->Start())
     return (EXIT_SUCCESS);
 }

@@ -11,10 +11,12 @@
 
 #include "BaseLib/Map.h"
 #include "BaseLib/ObjectLoader.h"
-#include "BaseLib/SnowParticle.h"
 #include "BaseLib/Text.h"
+#include "UserLib/Knife.h"
+#include "UserLib/Menu.h"
 #include "UserLib/Player.h"
 #include "UserLib/Zombie.h"
+#include "UserLib/Item.h"
 
 class CEngine
 {
@@ -28,6 +30,7 @@ public:
     void Destroy();
 
     bool Start();
+    void ShowMenu();
 
 protected:
     static SDL_Window *GetWindow() { return m_hWindow; }
@@ -41,32 +44,31 @@ protected:
     void DrawPlayerStatus(float fHealth, uint32_t iAmmo, uint32_t iAllAmmo, int32_t iPoints, const std::string& stWeaponName) const;
 
     void UpdateEngine();
-    void Show();
+    void Show() const;
 
     Mix_Chunk *LoadSound(const char *c_szFileName);
-
-    void initParticles(int i);
-    void initPartSystem();
-    void drawRain();
-    void drawScene();
 
 private:
     std::string m_stAppTitle;
     int32_t m_iWidth, m_iHeight;
     bool m_bIsRunning;
     bool m_bIsFiring;
+    bool m_bIsOnMainMenu;
     static SDL_Window *m_hWindow;
     static SDL_GLContext m_glContext;
     CObjectLoader m_ObjLoader;
     std::vector<CMap> m_vMyMaps;
     std::vector<CWeapon> m_vMyWeapons;
-    std::vector<CZombie *> m_vMyZombies;
     std::vector<uint32_t> m_vModels;
     std::vector<Mix_Chunk*> m_vSounds;
     Mix_Music *m_Music;
     CPlayer *m_pPlayer;
     CText *m_pText;
+    CText *m_pMenuText;
     CZombie *m_pZombie;
+    CKnife *m_pKnife;
+    CMenu* m_pGameMenu;
+    CItem* m_pItemObject;
 }; // CEngine
 
 

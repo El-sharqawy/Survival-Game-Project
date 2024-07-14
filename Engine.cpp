@@ -10,130 +10,8 @@
 #include <cstdlib> // For strtol
 #include "Debug/Timer.h"
 #include <SDL2/SDL_image.h>
-
-
-/*** PARTICLE SYSTEM ***/
-float slowdown = 0.1;
-float velocity = 0.0;
-float zoom = -20.0;
-float pan = 0.0;
-float tilt = 0.0;
-float hailsize = 0.1;
-
-int loop;
-int fall;
-
-//floor colors
-float r = 0.0;
-float g = 1.0;
-float b = 0.0;
-float ground_points[21][21][3];
-float ground_colors[21][21][4];
-float accum = -10.0;
-
-typedef struct {
-	// Life
-	bool alive;	// is the particle alive?
-	float life;	// particle lifespan
-	float fade; // decay
-	// color
-	float red;
-	float green;
-	float blue;
-	// Position/direction
-	float xpos;
-	float ypos;
-	float zpos;
-	// Velocity/Direction, only goes down in y dir
-	float vel;
-	// Gravity
-	float gravity;
-}particles;
-
-// Paticle System
-particles par_sys[MAX_PARTICLES];
-
-// Initialize/Reset Particles - give them their attributes
-void CEngine::initParticles(const int i)
-{
-	const CVector3D pos = GetPlayer()->GetPlayerCamera()->GetCameraLocation();
-
-	par_sys[i].alive = true;
-	par_sys[i].life = 1.0;
-	par_sys[i].fade = float(rand()%100)/1000.0f+0.003f;
-
-	par_sys[i].xpos = pos.GetX() + (float) (rand() % 21);
-	par_sys[i].ypos = pos.GetY() + 10.0f;
-	par_sys[i].zpos = pos.GetZ() + (float) (rand() % 21);
-
-	par_sys[i].red = 0.5;
-	par_sys[i].green = 0.5;
-	par_sys[i].blue = 1.0;
-
-	par_sys[i].vel = velocity;
-	par_sys[i].gravity = -0.8;//-0.8;
-
-}
-
-void CEngine::initPartSystem()
-{
-	glShadeModel(GL_SMOOTH);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClearDepth(1.0);
-	glEnable(GL_DEPTH_TEST);
-	// Initialize particles
-	for (loop = 0; loop < MAX_PARTICLES; loop++) {
-		initParticles(loop);
-	}
-}
-
-// For Rain
-void CEngine::drawRain()
-{
-	for (loop = 0; loop < MAX_PARTICLES; loop=loop+2)
-	{
-		if (par_sys[loop].alive == true) {
-			const float x = par_sys[loop].xpos;
-			const float y = par_sys[loop].ypos;
-			const float z = par_sys[loop].zpos + zoom;
-
-			// Draw particles
-			glColor3f(0.5, 0.5, 1.0);
-			glBegin(GL_LINES);
-			glVertex3f(x, y, z);
-			glVertex3f(x, y+0.5, z);
-			glEnd();
-
-			// Update values
-			//Move
-			// Adjust slowdown for speed!
-			par_sys[loop].ypos += par_sys[loop].vel / (slowdown*1000);
-			par_sys[loop].vel += par_sys[loop].gravity;
-			// Decay
-			par_sys[loop].life -= par_sys[loop].fade;
-
-			if (par_sys[loop].ypos <= -10) {
-				par_sys[loop].life = -1.0;
-			}
-			//Revive
-			if (par_sys[loop].life < 0.0) {
-				initParticles(loop);
-			}
-		}
-	}
-}
-
-// Draw Particles
-void CEngine::drawScene()
-{
-	// Which Particles
-	if (fall == RAIN) {
-		drawRain();
-	}
-}
-
-/*** END OF PARTICLE ***/
-
+#include "BaseLib/Random.h"
+#include "BaseLib/Utils.h"
 SDL_Window* CEngine::m_hWindow = nullptr;
 SDL_GLContext CEngine::m_glContext = nullptr;
 
@@ -146,15 +24,20 @@ CEngine::CEngine()
 	m_pText = nullptr;
 	m_bIsFiring = false;
 	m_bIsRunning= true;
+	m_bIsOnMainMenu = true;
 	m_Music = nullptr;
 	m_pZombie = nullptr;
+	m_pKnife = nullptr;
+	m_pGameMenu = nullptr;
+	m_pMenuText = nullptr;
+	m_pItemObject = nullptr;
 }
 
 bool CEngine::InitializeOpenGL() const
 {
     GLenum error = GL_NO_ERROR;
     //Initialize Projection Matrix
-	glClearColor(0.5,0.5,0.5,1.0);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClearDepth(1.0);
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
@@ -171,11 +54,6 @@ bool CEngine::InitializeOpenGL() const
     glEnable(GL_TEXTURE_2D);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glShadeModel(GL_SMOOTH);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClearDepth(1.0);
-	glEnable(GL_DEPTH_TEST);
-
     //Check for error
     error = glGetError();
     if( error != GL_NO_ERROR )
@@ -187,7 +65,7 @@ bool CEngine::InitializeOpenGL() const
 	return (true);
 }
 
-bool CEngine::InitializeWindow(const std::string &title, const int32_t iWidth, const int32_t iHeight, bool bIsFullScreen)
+bool CEngine::InitializeWindow(const std::string &title, const int32_t iWidth, const int32_t iHeight, const bool bIsFullScreen)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
@@ -198,7 +76,7 @@ bool CEngine::InitializeWindow(const std::string &title, const int32_t iWidth, c
 	constexpr int32_t flags = IMG_INIT_JPG | IMG_INIT_PNG;
 	const int32_t initted = IMG_Init(flags);
 	if ((initted & flags) != flags)
-		{
+	{
 		TraceError("IMG_Init: Failed to init required jpg and png support!\n");
 		TraceError("IMG_Init: %s\n", IMG_GetError());
 		// handle error
@@ -259,6 +137,7 @@ void CEngine::InitializeWorld()
 		if(tmp[0][0] == '\0')
 			break;
 		sscanf(tmp[0],"%s %s %d %d %d %f %f %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %s %s %s %s %s",tmp[1],tmp[2],&tmparr[2],&tmparr[0],&tmparr[1],&floatarr[0],&floatarr[1],&floatarr[2],&floatarr[3],&floatarr[4],&floatarr[5],&floatarr[6],&floatarr[7],&floatarr[8],&floatarr[9],&floatarr[10],&floatarr[11],&tmparr[3],&tmparr[4],&tmparr[5],&tmparr[6],&tmparr[7],&tmparr[8],&tmparr[9],tmp[3],tmp[4],tmp[5],tmp[6],tmp[7]);
+		TraceLog("%f-%f-%f", floatarr[6],floatarr[7],floatarr[8]);
 		std::vector<uint32_t> weaponAnims;
 		LoadAnimations(weaponAnims,tmp[2],tmparr[0]+tmparr[1]+tmparr[2]);
 		Mix_Chunk* fireSound = Mix_LoadWAV(tmp[3]);
@@ -269,10 +148,9 @@ void CEngine::InitializeWorld()
 	}
 	in.close();
 
-	m_vMyWeapons[0].SetStrength(20);
-	m_vMyWeapons[1].SetStrength(10);
+	//m_vMyWeapons[0].SetStrength(35);
+	//m_vMyWeapons[1].SetStrength(50);
 	m_pPlayer = new CPlayer("Osama", CCollisionSphere(CVector3D(0, 10.0, 0), 3.0), 0.2, 1.5,  0.2, &m_vMyWeapons[0]);
-	m_pPlayer->AddWeapon(&m_vMyWeapons[1]);
 	m_pPlayer->SetWindow(GetWindow());
 	m_pPlayer->SetPlayerHealth(100.0f);
 
@@ -328,10 +206,58 @@ void CEngine::InitializeWorld()
 	}
 
 	m_pText = new CText(vCharacters, 0.8f, 0.8f);
+	m_pMenuText = new CText(vCharacters, 0.8f, 0.8f);
 
+	std::vector<uint32_t> vFrames;
+	LoadAnimations(vFrames, "data/knife/knife", 5);
+	Mix_Chunk* HitSound = LoadSound("data/hit.wav");
+	Mix_Chunk* NormSound = LoadSound("data/nhit.wav");
+
+	m_pKnife = new CKnife(vFrames, 1000, 30, 30, CVector3D(-0.5f, -0.6f, -1.3f), HitSound, NormSound);
+
+	int32_t mod = m_ObjLoader.Load("data/health.obj", nullptr);
+	m_vModels.emplace_back(mod);
+	mod = m_ObjLoader.Load("data/allammo.obj", nullptr);
+	m_vModels.emplace_back(mod);
+
+	uint32_t tex = LoadTexture("data/background.png");
+	std::vector<CCollisionPlane> clPlanes;
+	clPlanes.emplace_back(0,0,1,-0.13,0.16,-1,-0.13,0.16,-1,-0.13,0.16,-1,-0.13,0.16,-1);
+	clPlanes.emplace_back(0,0,1,-0.13,0.08,-1,-0.13,0.16,-1,-0.08,0.16,-1,-0.13,0.16,-1);
+	std::vector<std::string> strings;
+	strings.emplace_back("Play");
+	strings.emplace_back("Exit");
+	CCollisionPlane xyz(0,0,1,-1.33,1,-2.4,-1.33,-1,-2.4,1.33,-1,-2.4,1.33,1,-2.4);
+
+	m_pGameMenu = new CMenu(tex, clPlanes, strings, xyz, m_pMenuText, GetWindow());
 	m_Music = Mix_LoadMUS("data/hive.wav");
 	Mix_PlayMusic(m_Music,-1);
-	//initPartSystem();
+
+	m_pItemObject = new CItem();
+}
+
+void CEngine::ShowMenu()
+{
+	if (m_pGameMenu == nullptr)
+	{
+		return;
+	}
+
+	const int32_t iMenu = m_pGameMenu->Show();
+	m_bIsOnMainMenu = true;
+	switch(iMenu)
+	{
+		case 0:
+			m_bIsOnMainMenu = false;
+		break;
+		case 1:
+		{
+			m_bIsRunning = false;
+		}
+		break;
+		default:
+			break;
+	}
 }
 
 void CEngine::UpdateEngine()
@@ -340,6 +266,21 @@ void CEngine::UpdateEngine()
 
 	if (m_pZombie->Update(m_vMyMaps[0].GetCollisionPlanes(), GetPlayer()->GetPlayerCamera()->GetCameraLocation()))
 	{
+		const float drop = frandom(1,4);
+		if (drop == 1)
+		{
+			m_pItemObject->Add(0, m_vModels[0], CCollisionSphere(m_pZombie->GetCollisionSphere()->GetCenter(), 2.0f));
+		}
+		else if (drop == 2)
+		{
+			m_pItemObject->Add(1, m_vModels[1], CCollisionSphere(m_pZombie->GetCollisionSphere()->GetCenter(), 2.0f));
+		}
+		else if (drop >= 3)
+		{
+			m_pItemObject->Add(static_cast<int32_t>(GetPlayer()->GetWeaponsNumber() + 10), m_vMyWeapons[GetPlayer()->GetWeaponsNumber()].GetOuterView(),
+				CCollisionSphere(m_pZombie->GetCollisionSphere()->GetCenter(), 2.0f));
+		}
+
 		delete m_pZombie;
 		m_pZombie = new CZombie(100, 0.3, 10, CCollisionSphere(*m_vMyMaps[0].GetRandomSpawnPoints(), 1.0f), CVector3D(0.0f, 0.0f, 0.0f), GetPlayer()->GetPlayerCamera()->GetCameraLocation());
 		GetPlayer()->AddPoints(10);
@@ -361,8 +302,7 @@ void CEngine::UpdateEngine()
 			Direction.GetX(), Direction.GetY(), Direction.GetZ(), m_pPlayer->GetPlayerCamera()->GetCameraLocation().GetX(), m_pPlayer->GetPlayerCamera()->GetCameraLocation().GetY(),
 			m_pPlayer->GetPlayerCamera()->GetCameraLocation().GetZ(), 5.0))
 			{
-				m_pZombie->TakeDamage(100);
-				TraceLog("Zombie Took Damage!");
+				m_pZombie->TakeDamage(GetWeapon()->GetWeaponStrength());
 			}
 		}
 	}
@@ -383,9 +323,48 @@ void CEngine::UpdateEngine()
 		glColorMask(1.0f, 0.0f,
 			0.0f, 1.0f);
 	}
+
+	m_pKnife->Update(GetPlayer());
+
+	int32_t itemDrop = m_pItemObject->Update(GetPlayer()->GetCollisionSphere());
+	switch (itemDrop)
+	{
+		case -1:
+		{
+			break;
+		}
+		case 0:
+		{
+			GetWeapon()->AddBullets(300);
+		}
+		break;
+		case 1:
+		{
+			GetPlayer()->SetPlayerHealth(100);
+		}
+		break;
+		case 10:
+		{
+			GetPlayer()->AddWeapon(&m_vMyWeapons[0]);
+		}
+		break;
+		case 11:
+		{
+			GetPlayer()->AddWeapon(&m_vMyWeapons[1]);
+		}
+		break;
+		case 12:
+		{
+			GetPlayer()->AddWeapon(&m_vMyWeapons[2]);
+		}
+		break;
+		default:
+			break;
+	}
+
 }
 
-void CEngine::Show()
+void CEngine::Show() const
 {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     //Render Triangle
@@ -399,11 +378,12 @@ void CEngine::Show()
 	}
 	m_pZombie->Show();
     m_pPlayer->GetPlayerCamera()->UpdateCamera();
+	m_pItemObject->Show();
 	glLoadIdentity();
 	m_pPlayer->ShowPlayer();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	DrawPlayerStatus(GetPlayer()->GetPlayerHealth(), GetWeapon()->GetCurrentAmmo(), GetWeapon()->GetAllAmmo(), GetPlayer()->GetPoints(), GetWeapon()->GetName());
-	drawScene();
+	m_pKnife->Show();
 }
 
 void CEngine::ChangeSkyBox(int32_t skyNum) const
@@ -471,6 +451,25 @@ bool CEngine::Start()
 				{
 					switch (event.key.keysym.sym)
 					{
+						case SDLK_ESCAPE:
+						{
+							const int32_t iMenu = m_pGameMenu->Show();
+							m_bIsOnMainMenu = true;
+							switch(iMenu)
+							{
+								case 0:
+									m_bIsOnMainMenu = false;
+									break;
+								case 1:
+								{
+									m_bIsRunning = false;
+								}
+								break;
+								default:
+									break;
+							}
+						}
+						break;
 						case SDLK_q:
 						{
 							m_pPlayer->GetPlayerCamera()->SetMouseOut();
@@ -542,6 +541,14 @@ bool CEngine::Start()
 							m_pPlayer->GetCurrentWeapon()->Reload();
 						}
 						break;
+						case SDLK_e:
+						{
+							if (m_pKnife->SetKnife(GetPlayer(), m_pZombie) != -1)
+							{
+								m_pZombie->TakeDamage(m_pKnife->GetStrength());
+							}
+						}
+						break;
 						default:
 							continue;
 					}
@@ -579,7 +586,6 @@ bool CEngine::Start()
 								{
 									m_pPlayer->Sprint(false);
 									m_bIsFiring = true;
-									TraceLog("m_bIsFiring = True!");
 								}
 							}
 							break;
@@ -613,7 +619,12 @@ bool CEngine::Start()
 					continue;
 			}
 		}
-		UpdateEngine();
+
+		if (!m_bIsOnMainMenu)
+		{
+			UpdateEngine();
+		}
+
         Show();
 
 	    SDL_GL_SwapWindow(GetWindow());
@@ -661,11 +672,11 @@ void CEngine::DrawPlayerStatus(const float fHealth, const uint32_t iAmmo, const 
 {
 	char c_szTemp[200];
 	sprintf(c_szTemp, "Health: %.1f", fHealth);
-	if (fHealth > 60)
+	if (fHealth > 70)
 	{
 		m_pText->RenderText(CVector3D(-0.5f, 0.35f, -1.0f), CVector3D(0.0f, 0.0f, 0.0f), CVector3D(0.020f, 0.020f, 0.020f), c_szTemp, CVector3D(0.0f, 1.0f, 0.0f));
 	}
-	else if (fHealth <= 60 && fHealth > 30)
+	else if (fHealth <= 70 && fHealth >= 50)
 	{
 		m_pText->RenderText(CVector3D(-0.5f, 0.35f, -1.0f), CVector3D(0.0f, 0.0f, 0.0f), CVector3D(0.020f, 0.020f, 0.020f), c_szTemp);
 	}
@@ -679,6 +690,8 @@ void CEngine::DrawPlayerStatus(const float fHealth, const uint32_t iAmmo, const 
 	m_pText->RenderText(CVector3D(0.22f, 0.35f, -1.0f), CVector3D(0.0f, 0.0f, 0.0f), CVector3D(0.020f, 0.020f, 0.020f), c_szTemp);
 	sprintf(c_szTemp, "+");
 	m_pText->RenderText(CVector3D(0.0f, 0.0f, -1.0f), CVector3D(0.0f, 0.0f, 0.0f), CVector3D(0.035f, 0.035f, 0.035f), c_szTemp);
+	sprintf(c_szTemp, "Zombie Health: %d", m_pZombie->GetHealth());
+	m_pText->RenderText(CVector3D(0.22f, -0.39f, -1.0f), CVector3D(0.0f, 0.0f, 0.0f), CVector3D(0.020f, 0.020f, 0.020f), c_szTemp);
 }
 
 Mix_Chunk *CEngine::LoadSound(const char *c_szFileName)
@@ -707,9 +720,10 @@ void CEngine::Destroy()
     m_hWindow = nullptr;
 	delete m_pText;
 	m_pText = nullptr;
+	delete m_pMenuText;
+	m_pMenuText = nullptr;
 	delete m_pPlayer;
 	m_pPlayer = nullptr;
-	m_vMyZombies.clear();
 	delete m_pZombie;
 	m_pZombie = nullptr;
 	Mix_FreeMusic(m_Music);

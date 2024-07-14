@@ -71,6 +71,12 @@ add_executable(MyGame main.cpp
         Debug/Utils.h
         BaseLib/Random.cpp
         BaseLib/Random.h
+        UserLib/Knife.cpp
+        UserLib/Knife.h
+        UserLib/Menu.cpp
+        UserLib/Menu.h
+        UserLib/Item.cpp
+        UserLib/Item.h
 )
 
 # Link SDL2 libraries

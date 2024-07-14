@@ -14,6 +14,7 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 #define MAX_PARTICLES 2000
+#define GAME_FPS 30
 
 #define RAIN	0
 #define SNOW	1

@@ -7,8 +7,6 @@
 #include <complex>
 #include <SDL_timer.h>
 
-#include "../Debug/Log.h"
-
 std::vector<uint32_t> CZombie::m_vFrames;
 uint32_t CZombie::m_uiWalk = 0;
 uint32_t CZombie::m_uiAttack = 0;
@@ -34,7 +32,7 @@ CZombie::CZombie(const std::vector<uint32_t>& vAnimFrames, const uint32_t &uiWal
 	m_v3Rotation = v3Rotation;
 	m_v3Position.Change(v3PlayerLoc - m_csZombieSphere.GetCenter() + CVector3D(50.f, 5.0f, 5.0f));
 	m_v3Position.Normalize();
-	m_iLastAttackTime = SDL_GetTicks();
+	m_iLastAttackTime = SDL_GetTicks() + 3000;
 	m_v3StartPos = m_v3Position;
 }
 
@@ -58,14 +56,12 @@ CZombie::CZombie(const int32_t iHealth, const float fSpeed, const int32_t iStren
 
 bool CZombie::Update(const std::vector<CCollisionPlane>& vColPlanes, const CVector3D playerLocation)
 {
-	TraceLog("Update Function Called (curHealth : %d)", GetHealth());
 	if (GetHealth() <= 0)
 	{
 		SetIsDead(true);
 		SetIsWalking(false);
 		SetIsAttacking(false);
 		m_uiCurFrame = m_uiWalk + m_uiAttack;
-		TraceLog("CZombie::Update Zombie IS Dead!");
 		return (true);
 	}
 
